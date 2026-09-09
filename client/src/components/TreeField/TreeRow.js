@@ -16,21 +16,21 @@ const TreeRow = ({
   node,
   depth,
   indentationWidth,
-  selected,
-  collapsed,
-  readonly,
-  isDragging,
-  isGhost,
+  selected = false,
+  collapsed = false,
+  readonly = false,
+  isDragging = false,
+  isGhost = false,
   onSelect,
   onToggleCollapse,
   onAddChild,
   onDelete,
   onMove,
-  canMoveUp,
-  canMoveDown,
-  canIndent,
-  canOutdent,
-  addChildLabel,
+  canMoveUp = false,
+  canMoveDown = false,
+  canIndent = false,
+  canOutdent = false,
+  addChildLabel = '',
 }) => {
   const {
     attributes,
@@ -212,17 +212,5 @@ TreeRow.propTypes = {
   addChildLabel: PropTypes.string,
 };
 
-TreeRow.defaultProps = {
-  selected: false,
-  collapsed: false,
-  readonly: false,
-  isDragging: false,
-  isGhost: false,
-  canMoveUp: false,
-  canMoveDown: false,
-  canIndent: false,
-  canOutdent: false,
-  addChildLabel: '',
-};
 
 export default TreeRow;

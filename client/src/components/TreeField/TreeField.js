@@ -37,12 +37,12 @@ const INDENTATION_WIDTH = 24;
 const TreeField = ({
   urls,
   securityID,
-  maxDepth,
-  labels,
-  showDetail,
-  readonly,
-  disabled,
-  canAdd,
+  maxDepth = 0,
+  labels = {},
+  showDetail = true,
+  readonly = false,
+  disabled = false,
+  canAdd = false,
 }) => {
   const [nodes, setNodes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -508,13 +508,5 @@ TreeField.propTypes = {
   canAdd: PropTypes.bool,
 };
 
-TreeField.defaultProps = {
-  maxDepth: 0,
-  labels: {},
-  showDetail: true,
-  readonly: false,
-  disabled: false,
-  canAdd: false,
-};
 
 export default TreeField;

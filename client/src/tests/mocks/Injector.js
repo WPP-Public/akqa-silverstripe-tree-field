@@ -1,8 +1,10 @@
+// Stands in for the CMS dependency injector while testing
 const Injector = {
-  ready: (fn) => fn(),
+  ready: jest.fn((fn) => fn()),
   component: {
-    register: () => {},
-    registerMany: () => {},
+    register: jest.fn(),
+    registerMany: jest.fn(),
+    get: jest.fn(),
   },
 };
 

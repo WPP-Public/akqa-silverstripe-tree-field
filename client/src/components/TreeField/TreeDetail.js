@@ -7,7 +7,14 @@ import i18n from 'i18n';
  * The panel beside the tree. It renders the selected record's own getCMSFields() through the
  * CMS form schema, so any field type the record already uses keeps working here.
  */
-const TreeDetail = ({ schemaUrl, nodeId, nodeTitle, onSaved, onDirtyChange, emptyMessage }) => {
+const TreeDetail = ({
+  schemaUrl,
+  nodeId = null,
+  nodeTitle = '',
+  onSaved,
+  onDirtyChange,
+  emptyMessage,
+}) => {
   const [saving, setSaving] = useState(false);
   const wrapperRef = useRef(null);
 
@@ -76,9 +83,5 @@ TreeDetail.propTypes = {
   emptyMessage: PropTypes.string.isRequired,
 };
 
-TreeDetail.defaultProps = {
-  nodeId: null,
-  nodeTitle: '',
-};
 
 export default TreeDetail;
