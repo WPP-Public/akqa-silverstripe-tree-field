@@ -38,9 +38,10 @@ jQuery.entwine('ss', ($) => {
     getProps() {
       const input = this.getInputField();
 
+      // jQuery.data() coerces attribute values, so anything that must stay a string is cast back
       return {
         urls: input.data('urls') || {},
-        securityID: input.data('security-id') || '',
+        securityID: String(input.data('security-id') || ''),
         maxDepth: parseInt(input.data('max-depth'), 10) || 0,
         labels: input.data('labels') || {},
         showDetail: !!input.data('show-detail'),
