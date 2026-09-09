@@ -1,0 +1,11 @@
+---
+Name: akqa-treefield
+---
+SilverStripe\Admin\LeftAndMain:
+  extra_requirements_javascript:
+    'akqa/silverstripe-tree-field:client/dist/js/bundle.js':
+      defer: true
+  extra_requirements_i18n:
+    - 'akqa/silverstripe-tree-field:client/lang'
+  extra_requirements_css:
+    - 'akqa/silverstripe-tree-field:client/dist/styles/bundle.css'

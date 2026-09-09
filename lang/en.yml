@@ -1,0 +1,10 @@
+en:
+  Akqa\SilverStripe\TreeField\Controllers\TreeFieldController:
+    SAVE: 'Save'
+  Akqa\SilverStripe\TreeField\Form\TreeField:
+    LOADING: 'Loading…'
+  Akqa\SilverStripe\TreeField\Sources\DataObjectTreeSource:
+    ADD_CHILD: 'Add child {name}'
+    ADD_ROOT: 'Add {name}'
+    NEW_TITLE: 'New {name}'
+    UNTITLED: 'Untitled {name}'

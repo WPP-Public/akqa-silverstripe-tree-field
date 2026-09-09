@@ -1,0 +1,251 @@
+/**
+ * TreeField styles.
+ *
+ * Colours come from CSS custom properties where the CMS defines them, with fallbacks so the field
+ * still reads correctly if it is used outside the admin theme.
+ */
+
+$tree-field-border: var(--border-color, #ced5e1);
+$tree-field-muted: var(--text-muted, #6c757d);
+$tree-field-selected-bg: var(--tab-panel-selected-bg, #edf7fd);
+$tree-field-hover-bg: rgba(0, 0, 0, 0.03);
+
+.tree-field {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+
+  &__toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  &__messages {
+    &:empty {
+      display: none;
+    }
+  }
+
+  &__message {
+    padding: 0.5rem 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+
+  &__body {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    min-height: 0;
+  }
+
+  &__tree {
+    flex: 1 1 40%;
+    min-width: 0;
+    border: 1px solid #{$tree-field-border};
+    border-radius: 4px;
+    padding: 0.25rem;
+    background: var(--well-bg, #fff);
+  }
+
+  &--with-detail &__tree {
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+
+  &__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  &__row {
+    margin: 0;
+    padding: 0;
+
+    &-inner {
+      display: flex;
+      align-items: center;
+      gap: 0.125rem;
+      border-radius: 3px;
+      min-height: 2.25rem;
+
+      &:hover {
+        background: #{$tree-field-hover-bg};
+      }
+    }
+
+    &--selected > &-inner {
+      background: #{$tree-field-selected-bg};
+      box-shadow: inset 2px 0 0 var(--color-cms-highlight, #005a93);
+    }
+
+    &--dragging {
+      opacity: 0.4;
+    }
+
+    &--disabled &__label {
+      cursor: default;
+    }
+  }
+
+  &__handle,
+  &__toggle,
+  &__action {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: #{$tree-field-muted};
+
+    &::before {
+      margin: 0;
+    }
+  }
+
+  &__handle {
+    cursor: grab;
+    touch-action: none;
+
+    &:active {
+      cursor: grabbing;
+    }
+  }
+
+  &__toggle--empty {
+    visibility: hidden;
+  }
+
+  &__label {
+    flex: 1 1 auto;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+    padding: 0.25rem 0.5rem;
+    border: 0;
+    background: none;
+    text-align: start;
+    color: inherit;
+  }
+
+  &__title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__subtitle {
+    color: #{$tree-field-muted};
+    font-size: 0.85em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__badge {
+    flex: 0 0 auto;
+  }
+
+  &__row-actions {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    opacity: 0;
+  }
+
+  &__row:hover &__row-actions,
+  &__row:focus-within &__row-actions,
+  &__row--selected &__row-actions {
+    opacity: 1;
+  }
+
+  &__action--danger {
+    color: var(--danger, #c9442e);
+  }
+
+  &__drag-overlay {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.375rem 0.75rem;
+    background: #fff;
+    border: 1px solid #{$tree-field-border};
+    border-radius: 3px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  }
+
+  &__empty,
+  &__loading {
+    margin: 0;
+    padding: 1rem;
+    color: #{$tree-field-muted};
+  }
+
+  &__detail {
+    flex: 1 1 60%;
+    min-width: 0;
+    border: 1px solid #{$tree-field-border};
+    border-radius: 4px;
+    background: var(--well-bg, #fff);
+
+    &--empty {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 8rem;
+      color: #{$tree-field-muted};
+    }
+  }
+
+  &__detail-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #{$tree-field-border};
+  }
+
+  &__detail-title {
+    margin: 0;
+    font-size: 1rem;
+  }
+
+  &__detail-status {
+    color: #{$tree-field-muted};
+    font-size: 0.85em;
+  }
+
+  &__detail-body {
+    padding: 1rem;
+  }
+
+  &--busy {
+    cursor: progress;
+  }
+}
+
+// Keep the cursor consistent while a row is in flight
+.tree-field-dragging {
+  cursor: grabbing;
+  user-select: none;
+}
+
+@media (max-width: 991px) {
+  .tree-field__body {
+    flex-direction: column;
+  }
+
+  .tree-field__tree,
+  .tree-field__detail {
+    flex: 1 1 auto;
+    width: 100%;
+  }
+}
