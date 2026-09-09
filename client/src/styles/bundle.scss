@@ -85,7 +85,14 @@ $tree-field-hover-bg: rgba(0, 0, 0, 0.03);
       opacity: 0.4;
     }
 
-    &--disabled &__label {
+    // Unpublished work reads as italic, the same convention the page tree uses.
+    // Written out in full because the modifier and the child are on different blocks.
+    &--draft .tree-field__title,
+    &--modified .tree-field__title {
+      font-style: italic;
+    }
+
+    &--disabled .tree-field__label {
       cursor: default;
     }
   }

@@ -59,6 +59,7 @@ const TreeRow = ({
         'tree-field__row--dragging': isDragging,
         'tree-field__row--ghost': isGhost,
         'tree-field__row--disabled': !node.canEdit,
+        [`tree-field__row--${node.status}`]: Boolean(node.status),
       })}
       data-node-id={node.id}
     >
@@ -189,6 +190,7 @@ TreeRow.propTypes = {
     icon: PropTypes.string,
     badges: PropTypes.array,
     childCount: PropTypes.number,
+    status: PropTypes.oneOf(['published', 'modified', 'draft']),
     canEdit: PropTypes.bool,
     canDelete: PropTypes.bool,
     canAddChildren: PropTypes.bool,

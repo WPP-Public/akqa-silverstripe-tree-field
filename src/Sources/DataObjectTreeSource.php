@@ -15,6 +15,7 @@ use SilverStripe\Forms\Form;
 use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\Security\Security;
+use SilverStripe\Versioned\Versioned;
 
 /**
  * A TreeSource backed by a single DataObject class that points at its own parent through a
@@ -609,12 +610,69 @@ class DataObjectTreeSource implements TreeSource
             }
         }
 
+        $versioned = $this->isVersioned();
+
         // Depth first, so children never outlive their parent
         foreach (array_reverse($subtree) as $record) {
-            $record->delete();
+            // Archiving keeps the record recoverable, and takes the published version with it
+            if ($versioned && $record->isPublished()) {
+                $record->doArchive();
+            } else {
+                $record->delete();
+            }
         }
 
         $this->flushRecords();
+    }
+
+    /**
+     * Whether records in this tree carry the Versioned extension, and so have a draft and a
+     * published state to report.
+     */
+    public function isVersioned(): bool
+    {
+        if (!class_exists(Versioned::class)) {
+            return false;
+        }
+
+        return DataObject::singleton($this->getDataClass())->hasExtension(Versioned::class);
+    }
+
+    /**
+     * One of "published", "modified" or "draft" for a versioned record, or null when the tree is
+     * not versioned. "draft" means it has never been published.
+     */
+    public function getNodeStatus(DataObject $node): ?string
+    {
+        if (!$this->isVersioned() || !$node->isInDB()) {
+            return null;
+        }
+
+        if (!$node->isPublished()) {
+            return 'draft';
+        }
+
+        return $node->isModifiedOnDraft() ? 'modified' : 'published';
+    }
+
+    /**
+     * Badges describing a record's publication state, prepended to any the record supplies.
+     *
+     * @return array<int, array{text: string, type: string}>
+     */
+    protected function getStatusBadges(DataObject $node): array
+    {
+        return match ($this->getNodeStatus($node)) {
+            'draft' => [[
+                'text' => _t(__CLASS__ . '.STATUS_DRAFT', 'Draft'),
+                'type' => 'warning',
+            ]],
+            'modified' => [[
+                'text' => _t(__CLASS__ . '.STATUS_MODIFIED', 'Modified'),
+                'type' => 'warning',
+            ]],
+            default => [],
+        };
     }
 
     public function getNodeData(DataObject $node): array
@@ -635,7 +693,11 @@ class DataObjectTreeSource implements TreeSource
             'subtitle' => $this->nodeAttribute($node, 'getTreeNodeSubtitle'),
             'icon' => $this->nodeAttribute($node, 'getTreeNodeIcon')
                 ?: (string) $this->config()->get('default_icon'),
-            'badges' => $this->normaliseBadges($this->nodeAttribute($node, 'getTreeNodeBadges', [])),
+            'status' => $this->getNodeStatus($node),
+            'badges' => array_merge(
+                $this->getStatusBadges($node),
+                $this->normaliseBadges($this->nodeAttribute($node, 'getTreeNodeBadges', []))
+            ),
             'canEdit' => $node->canEdit($member),
             'canDelete' => $node->canDelete($member),
             'canAddChildren' => $this->canAddChildren($node),
