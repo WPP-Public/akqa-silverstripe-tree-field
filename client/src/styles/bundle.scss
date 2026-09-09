@@ -1,6 +1,9 @@
 /**
  * TreeField styles.
  *
+ * The bootstrap element the PHP field renders carries entwine-treefield only, so that
+ * .tree-field always means the mounted component and never both.
+ *
  * Colours come from CSS custom properties where the CMS defines them, with fallbacks so the field
  * still reads correctly if it is used outside the admin theme.
  */
@@ -255,4 +258,10 @@ $tree-field-hover-bg: rgba(0, 0, 0, 0.03);
     flex: 1 1 auto;
     width: 100%;
   }
+}
+
+// The pre-React placeholder, replaced as soon as the component mounts
+.entwine-treefield > .tree-field__loading {
+  padding: 1rem;
+  color: #{$tree-field-muted};
 }

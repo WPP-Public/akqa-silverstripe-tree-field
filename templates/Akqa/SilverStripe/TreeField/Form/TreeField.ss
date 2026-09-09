@@ -4,7 +4,7 @@
 <%-- would have mounted. --%>
 <input $AttributesHTML />
 <div
-    class="tree-field entwine-treefield"
+    class="entwine-treefield"
     data-field-id="$ID"
     data-schema-component="$SchemaComponent"
 >
