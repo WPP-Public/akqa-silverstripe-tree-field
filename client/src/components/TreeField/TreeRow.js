@@ -23,14 +23,12 @@ const TreeRow = ({
   isGhost = false,
   onSelect,
   onToggleCollapse,
-  onAddChild,
   onDelete,
   onMove,
   canMoveUp = false,
   canMoveDown = false,
   canIndent = false,
   canOutdent = false,
-  addChildLabel = '',
 }) => {
   const {
     attributes,
@@ -48,7 +46,7 @@ const TreeRow = ({
   };
 
   const hasChildren = node.childCount > 0;
-  const showActions = !readonly && (node.canAddChildren || node.canDelete || node.canEdit);
+  const showActions = !readonly && (node.canDelete || node.canEdit);
 
   return (
     <li
@@ -103,34 +101,30 @@ const TreeRow = ({
           onClick={() => onSelect(node.id)}
         >
           <span className={classnames('tree-field__icon', node.icon)} aria-hidden="true" />
-          <span className="tree-field__title">{node.title}</span>
-          {node.subtitle && (
-            <span className="tree-field__subtitle">{node.subtitle}</span>
-          )}
-          {(node.badges || []).map((badge) => (
-            <span
-              key={`${node.id}-${badge.text}`}
-              className={classnames('badge', 'tree-field__badge', `badge-${badge.type || 'secondary'}`)}
-            >
-              {badge.text}
+          <span className="tree-field__text">
+            <span className="tree-field__title-line">
+              <span className="tree-field__title">{node.title}</span>
+              {(node.badges || []).map((badge) => (
+                <span
+                  key={`${node.id}-${badge.text}`}
+                  className={classnames(
+                    'badge',
+                    'tree-field__badge',
+                    `badge-${badge.type || 'secondary'}`
+                  )}
+                >
+                  {badge.text}
+                </span>
+              ))}
             </span>
-          ))}
+            <span className="tree-field__subtitle">
+              {node.subtitle || i18n._t('TreeField.NO_LINK', 'No link set')}
+            </span>
+          </span>
         </button>
 
         {showActions && (
           <div className="tree-field__row-actions">
-            {node.canAddChildren && (
-              <button
-                type="button"
-                className="tree-field__action btn"
-                onClick={() => onAddChild(node.id)}
-                aria-label={addChildLabel}
-                title={addChildLabel}
-              >
-                <span className="font-icon-plus-circled" aria-hidden="true" />
-              </button>
-            )}
-
             <UncontrolledDropdown>
               <DropdownToggle
                 className="tree-field__action btn"
@@ -204,14 +198,12 @@ TreeRow.propTypes = {
   isGhost: PropTypes.bool,
   onSelect: PropTypes.func.isRequired,
   onToggleCollapse: PropTypes.func.isRequired,
-  onAddChild: PropTypes.func.isRequired,
   onDelete: PropTypes.func.isRequired,
   onMove: PropTypes.func.isRequired,
   canMoveUp: PropTypes.bool,
   canMoveDown: PropTypes.bool,
   canIndent: PropTypes.bool,
   canOutdent: PropTypes.bool,
-  addChildLabel: PropTypes.string,
 };
 
 

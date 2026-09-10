@@ -1,4 +1,6 @@
 import {
+  withAdders,
+  moveNodeInTree,
   flattenTree,
   flattenVisible,
   findNode,
@@ -145,5 +147,78 @@ describe('getPositionAmongSiblings', () => {
 
   it('counts from zero at the top level', () => {
     expect(getPositionAmongSiblings(flat, 'set-2', 'set-1', null)).toBe(0);
+  });
+});
+
+describe('withAdders', () => {
+  it('closes off every branch that takes children, and the tree itself', () => {
+    const rows = withAdders(flattenTree(tree), true);
+
+    expect(rows.map((row) => (row.type === 'node' ? row.item.id : `add:${row.parentId ?? 'root'}`)))
+      .toEqual([
+        'set-1',
+        'item-1',
+        'item-2',
+        'add:item-2',
+        'add:item-1',
+        'item-3',
+        'add:item-3',
+        'add:set-1',
+        'set-2',
+        'add:set-2',
+        'add:root',
+      ]);
+  });
+
+  it('leaves out the root adder when the member cannot add there', () => {
+    const rows = withAdders(flattenTree(tree), false);
+
+    expect(rows.filter((row) => row.type === 'adder' && row.parentId === null)).toHaveLength(0);
+  });
+
+  it('skips rows that cannot take children', () => {
+    const flat = flattenTree([node('a', [], { allowsChildren: false })]);
+
+    expect(withAdders(flat, false).filter((row) => row.type === 'adder')).toHaveLength(0);
+  });
+
+  it('names each adder after the branch it belongs to', () => {
+    const rows = withAdders(flattenTree(tree), false);
+    const adder = rows.find((row) => row.type === 'adder' && row.parentId === 'set-1');
+
+    expect(adder.parentTitle).toBe('set-1');
+    expect(adder.depth).toBe(2);
+  });
+});
+
+describe('moveNodeInTree', () => {
+  it('reorders within the same parent', () => {
+    const moved = moveNodeInTree(tree, 'item-3', 'set-1', 0);
+
+    expect(moved[0].children.map((n) => n.id)).toEqual(['item-3', 'item-1']);
+  });
+
+  it('moves a branch to another parent, children and all', () => {
+    const moved = moveNodeInTree(tree, 'item-1', 'set-2', 0);
+
+    expect(moved[0].children.map((n) => n.id)).toEqual(['item-3']);
+    expect(moved[1].children[0].id).toBe('item-1');
+    expect(moved[1].children[0].children[0].id).toBe('item-2');
+  });
+
+  it('moves a row to the top level', () => {
+    const moved = moveNodeInTree(tree, 'item-3', null, 0);
+
+    expect(moved.map((n) => n.id)).toEqual(['item-3', 'set-1', 'set-2']);
+  });
+
+  it('leaves the tree alone when the row is not in it', () => {
+    expect(moveNodeInTree(tree, 'nope', null, 0)).toBe(tree);
+  });
+
+  it('clamps a position past the end of the list', () => {
+    const moved = moveNodeInTree(tree, 'set-2', null, 99);
+
+    expect(moved.map((n) => n.id)).toEqual(['set-1', 'set-2']);
   });
 });

@@ -22,7 +22,7 @@ const labels = {
 const makeNode = (id, title, children = [], overrides = {}) => ({
   id,
   title,
-  subtitle: null,
+  subtitle: `/${title.toLowerCase().replace(/ /g, '-')}`,
   icon: 'font-icon-link',
   badges: [],
   parentID: null,
@@ -86,6 +86,15 @@ describe('TreeField', () => {
     jest.resetAllMocks();
   });
 
+  it('shows each row on two lines, with where it points underneath', async () => {
+    renderField();
+
+    const row = (await screen.findByText('About us')).closest('li');
+
+    expect(within(row).getByText('About us')).toHaveClass('tree-field__title');
+    expect(within(row).getByText('/about-us')).toHaveClass('tree-field__subtitle');
+  });
+
   it('loads the tree and renders every row', async () => {
     renderField();
 
@@ -108,7 +117,7 @@ describe('TreeField', () => {
     renderField();
 
     await screen.findByText('Header');
-    await user.click(screen.getByRole('button', { name: 'Add menu' }));
+    await user.click(screen.getByRole('button', { name: labels.addRoot }));
 
     await waitFor(() => expect(global.fetch).toHaveBeenCalledWith(
       urls.add,
@@ -128,7 +137,7 @@ describe('TreeField', () => {
     renderField();
 
     await screen.findByText('Header');
-    await user.click(screen.getByRole('button', { name: 'Add menu' }));
+    await user.click(screen.getByRole('button', { name: labels.addRoot }));
 
     await waitFor(() => {
       const call = global.fetch.mock.calls.find(([url]) => url === urls.add);
@@ -136,13 +145,22 @@ describe('TreeField', () => {
     });
   });
 
-  it('adds a child under the row whose button was pressed', async () => {
+  it('closes off each branch, and the tree, with its own add box', async () => {
+    renderField();
+
+    await screen.findByText('Header');
+
+    expect(screen.getByRole('button', { name: 'Add inside Header' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Add inside About us' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: labels.addRoot })).toBeInTheDocument();
+  });
+
+  it('adds a child under the branch whose add box was pressed', async () => {
     const user = userEvent.setup();
     renderField();
 
     await screen.findByText('Header');
-    const buttons = screen.getAllByRole('button', { name: labels.addChild });
-    await user.click(buttons[0]);
+    await user.click(screen.getByRole('button', { name: 'Add inside Header' }));
 
     await waitFor(() => {
       const call = global.fetch.mock.calls.find(([url]) => url === urls.add);
@@ -160,7 +178,7 @@ describe('TreeField', () => {
 
     renderField();
     await screen.findByText('Header');
-    await user.click(screen.getByRole('button', { name: 'Add menu' }));
+    await user.click(screen.getByRole('button', { name: labels.addRoot }));
 
     await waitFor(() => expect(screen.getByTestId('form-builder'))
       .toHaveAttribute('data-schema-url', `${urls.schema}/set-2`));
@@ -274,7 +292,7 @@ describe('TreeField', () => {
 
     renderField();
     await screen.findByText('Header');
-    await user.click(screen.getByRole('button', { name: 'Add menu' }));
+    await user.click(screen.getByRole('button', { name: labels.addRoot }));
 
     expect(await screen.findByText('You cannot add menus')).toBeInTheDocument();
     expect(screen.getByText('Header')).toBeInTheDocument();
@@ -285,7 +303,8 @@ describe('TreeField', () => {
 
     await screen.findByText('Header');
 
-    expect(screen.queryByRole('button', { name: 'Add menu' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: labels.addRoot })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Add inside/ })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Reorder' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'More actions' })).not.toBeInTheDocument();
   });

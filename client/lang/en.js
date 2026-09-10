@@ -7,7 +7,7 @@ if (typeof(ss) === 'undefined' || typeof(ss.i18n) === 'undefined') {
 } else {
   ss.i18n.addDictionary('en', {
     "TreeField.ADDED": "Added",
-    "TreeField.ADD_CHILD_TO": "Add a child item",
+    "TreeField.ADD_INSIDE": "Add inside {title}",
     "TreeField.COLLAPSE": "Collapse",
     "TreeField.COLLAPSE_ALL": "Collapse all",
     "TreeField.CONFIRM_DELETE": "Delete \"{title}\"?",
@@ -21,6 +21,7 @@ if (typeof(ss) === 'undefined' || typeof(ss.i18n) === 'undefined') {
     "TreeField.INDENT": "Make a child of the row above",
     "TreeField.LOADING": "Loading…",
     "TreeField.MORE_ACTIONS": "More actions",
+    "TreeField.NO_LINK": "No link set",
     "TreeField.MOVED": "Moved",
     "TreeField.MOVE_DOWN": "Move down",
     "TreeField.MOVE_UP": "Move up",

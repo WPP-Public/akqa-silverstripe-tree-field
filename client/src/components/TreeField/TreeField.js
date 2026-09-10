@@ -11,6 +11,7 @@ import {
   useSensors,
 } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, sortableKeyboardCoordinates } from '@dnd-kit/sortable';
+import { MeasuringStrategy } from '@dnd-kit/core';
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
 import i18n from 'i18n';
 import createApi from '../../lib/api';
@@ -21,8 +22,11 @@ import {
   getProjection,
   getSubtreeHeight,
   findNode,
+  moveNodeInTree,
+  withAdders,
 } from '../../lib/tree';
 import TreeRow from './TreeRow';
+import TreeAdder from './TreeAdder';
 import TreeDetail from './TreeDetail';
 
 const INDENTATION_WIDTH = 24;
@@ -325,6 +329,10 @@ const TreeField = ({
       }
     }
 
+    // Apply the move locally first. Waiting for the server means the row springs back to where
+    // it started for a frame before the new tree arrives.
+    setNodes((current) => moveNodeInTree(current, active.id, parentId, position));
+
     runMutation(
       api.moveNode(active.id, parentId, position),
       i18n._t('TreeField.MOVED', 'Moved')
@@ -359,7 +367,7 @@ const TreeField = ({
 
   const selectedNode = selectedId ? findNode(nodes, selectedId) : null;
 
-  const rows = flattened.map((item) => {
+  const rowFor = (item) => {
     const siblings = flattened.filter((node) => node.parentId === item.parentId);
     const index = siblings.findIndex((node) => node.id === item.id);
 
@@ -375,17 +383,36 @@ const TreeField = ({
         isDragging={item.id === activeId}
         onSelect={handleSelect}
         onToggleCollapse={handleToggleCollapse}
-        onAddChild={handleAdd}
         onDelete={handleDelete}
         onMove={handleMove}
         canMoveUp={item.canEdit && index > 0}
         canMoveDown={item.canEdit && index < siblings.length - 1}
         canIndent={item.canEdit && canIndent(item)}
         canOutdent={item.canEdit && canOutdent(item)}
-        addChildLabel={labels.addChild}
       />
     );
-  });
+  };
+
+  const rows = isReadonly
+    ? flattened.map(rowFor)
+    : withAdders(flattened, treeCanAdd).map((row, index) => {
+      if (row.type === 'node') {
+        return rowFor(row.item);
+      }
+
+      return (
+        <TreeAdder
+          key={`adder-${row.parentId ?? 'root'}-${index}`}
+          parentId={row.parentId}
+          parentTitle={row.parentTitle}
+          depth={row.depth}
+          indentationWidth={INDENTATION_WIDTH}
+          label={row.parentId ? labels.addChild : labels.addRoot}
+          onAdd={handleAdd}
+          disabled={busy}
+        />
+      );
+    });
 
   return (
     <div
@@ -396,16 +423,6 @@ const TreeField = ({
       })}
     >
       <div className="tree-field__toolbar">
-        {!isReadonly && treeCanAdd && (
-          <button
-            type="button"
-            className="btn btn-primary font-icon-plus-circled tree-field__add"
-            onClick={() => handleAdd(null)}
-            disabled={busy}
-          >
-            {labels.addRoot}
-          </button>
-        )}
         <button
           type="button"
           className="btn btn-secondary tree-field__collapse-all"
@@ -436,19 +453,32 @@ const TreeField = ({
             <p className="tree-field__loading">{i18n._t('TreeField.LOADING', 'Loading…')}</p>
           )}
 
-          {!loading && rows.length === 0 && (
-            <p className="tree-field__empty">
-              {i18n.inject(
-                i18n._t('TreeField.NO_ITEMS', 'No {plural} yet'),
-                { plural: labels.plural.toLowerCase() }
+          {!loading && flattened.length === 0 && (
+            <ul className="tree-field__list">
+              <li className="tree-field__empty">
+                {i18n.inject(
+                  i18n._t('TreeField.NO_ITEMS', 'No {plural} yet'),
+                  { plural: (labels.plural || '').toLowerCase() }
+                )}
+              </li>
+              {!isReadonly && treeCanAdd && (
+                <TreeAdder
+                  parentId={null}
+                  depth={1}
+                  indentationWidth={INDENTATION_WIDTH}
+                  label={labels.addRoot}
+                  onAdd={handleAdd}
+                  disabled={busy}
+                />
               )}
-            </p>
+            </ul>
           )}
 
-          {!loading && rows.length > 0 && (
+          {!loading && flattened.length > 0 && (
             <DndContext
               sensors={sensors}
               collisionDetection={closestCenter}
+              measuring={{ droppable: { strategy: MeasuringStrategy.Always } }}
               modifiers={[restrictToVerticalAxis]}
               onDragStart={handleDragStart}
               onDragMove={handleDragMove}

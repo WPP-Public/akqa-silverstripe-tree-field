@@ -207,3 +207,104 @@ export const getPositionAmongSiblings = (items, activeId, overId, parentId) => {
   // The dragged row's parentId in the flat list is still its old one, so match on id
   return Math.max(0, siblings.findIndex((item) => item.id === activeId));
 };
+
+/**
+ * Interleave the rows with the dashed "add" affordances.
+ *
+ * One closes off the children of every row that can take them, and one closes off the tree. They
+ * are not draggable, so they never join the sortable list.
+ *
+ * @param {Array} flat rows in display order
+ * @param {boolean} canAddRoot
+ * @returns {Array} entries of {type: 'node'|'adder', ...}
+ */
+export const withAdders = (flat, canAddRoot) => {
+  const rows = [];
+
+  flat.forEach((item, index) => {
+    rows.push({ type: 'node', item });
+
+    if (!item.canAddChildren || !item.allowsChildren) {
+      return;
+    }
+
+    // The adder belongs after everything already nested under this row
+    const next = flat.slice(index + 1).findIndex((other) => other.depth <= item.depth);
+    const lastDescendant = next === -1 ? flat.length - 1 : index + next;
+
+    rows.push({
+      type: 'pending-adder',
+      parentId: item.id,
+      parentTitle: item.title,
+      depth: item.depth + 1,
+      after: flat[lastDescendant].id,
+    });
+  });
+
+  // Move each adder to sit after the last row of the branch it belongs to
+  const ordered = [];
+  const pending = rows.filter((row) => row.type === 'pending-adder');
+
+  rows
+    .filter((row) => row.type === 'node')
+    .forEach((row) => {
+      ordered.push(row);
+
+      // Deepest first, so each branch is closed off before the one containing it
+      pending
+        .filter((adder) => adder.after === row.item.id)
+        .sort((a, b) => b.depth - a.depth)
+        .forEach((adder) => ordered.push({ ...adder, type: 'adder' }));
+    });
+
+  if (canAddRoot) {
+    ordered.push({ type: 'adder', parentId: null, depth: 1, after: null });
+  }
+
+  return ordered;
+};
+
+/**
+ * Move a node, with everything under it, to a new parent and position.
+ *
+ * Applied locally as soon as a drag finishes so the row does not jump back to where it was while
+ * the server catches up.
+ */
+export const moveNodeInTree = (nodes, id, parentId, position) => {
+  let moved = null;
+
+  const remove = (branch) => branch.reduce((kept, node) => {
+    if (node.id === id) {
+      moved = node;
+      return kept;
+    }
+
+    return [...kept, { ...node, children: remove(node.children || []) }];
+  }, []);
+
+  const without = remove(nodes);
+
+  if (!moved) {
+    return nodes;
+  }
+
+  const insert = (branch, into) => {
+    if (into === null) {
+      const next = [...branch];
+      next.splice(Math.max(0, Math.min(position, next.length)), 0, moved);
+      return next;
+    }
+
+    return branch.map((node) => {
+      if (node.id === into) {
+        const children = [...(node.children || [])];
+        children.splice(Math.max(0, Math.min(position, children.length)), 0, moved);
+        return { ...node, children };
+      }
+
+      return { ...node, children: insert(node.children || [], into) };
+    });
+  };
+
+  return insert(without, parentId ?? null);
+};
