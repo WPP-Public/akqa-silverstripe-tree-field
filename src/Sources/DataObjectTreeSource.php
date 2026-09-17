@@ -656,23 +656,14 @@ class DataObjectTreeSource implements TreeSource
     }
 
     /**
-     * Badges describing a record's publication state, prepended to any the record supplies.
+     * Publication state used to be a text badge; it is now an orange status dot on the row.
+     * Kept as an empty hook so subclasses that override it still compose cleanly.
      *
      * @return array<int, array{text: string, type: string}>
      */
     protected function getStatusBadges(DataObject $node): array
     {
-        return match ($this->getNodeStatus($node)) {
-            'draft' => [[
-                'text' => _t(__CLASS__ . '.STATUS_DRAFT', 'Draft'),
-                'type' => 'warning',
-            ]],
-            'modified' => [[
-                'text' => _t(__CLASS__ . '.STATUS_MODIFIED', 'Modified'),
-                'type' => 'warning',
-            ]],
-            default => [],
-        };
+        return [];
     }
 
     public function getNodeData(DataObject $node): array

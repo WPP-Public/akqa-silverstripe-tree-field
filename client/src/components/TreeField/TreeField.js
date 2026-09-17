@@ -47,12 +47,16 @@ const TreeField = ({
   readonly = false,
   disabled = false,
   canAdd = false,
+  selectedId: initialSelectedId = null,
+  selectionParam = null,
 }) => {
   const [nodes, setNodes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState(null);
-  const [selectedId, setSelectedId] = useState(null);
+  const [selectedId, setSelectedId] = useState(
+    initialSelectedId ? String(initialSelectedId) : null
+  );
   const [collapsedIds, setCollapsedIds] = useState([]);
   const [activeId, setActiveId] = useState(null);
   const [overId, setOverId] = useState(null);
@@ -96,6 +100,33 @@ const TreeField = ({
   useEffect(() => {
     loadTree();
   }, [loadTree]);
+
+  // A record named in the URL that is not in this tree (deleted, or from another scope) is
+  // dropped once the tree has loaded, rather than leaving an empty detail panel open
+  useEffect(() => {
+    if (!loading && selectedId && !findNode(nodes, selectedId)) {
+      setSelectedId(null);
+    }
+  }, [loading, nodes, selectedId]);
+
+  // Keep the selection in the address bar, so a record can be linked to and survives a reload
+  useEffect(() => {
+    if (!selectionParam || !window.history || !window.history.replaceState) {
+      return;
+    }
+
+    const url = new window.URL(window.location.href);
+
+    if (selectedId) {
+      url.searchParams.set(selectionParam, selectedId);
+    } else {
+      url.searchParams.delete(selectionParam);
+    }
+
+    if (url.toString() !== window.location.href) {
+      window.history.replaceState(window.history.state, '', url.toString());
+    }
+  }, [selectionParam, selectedId]);
 
   const flattened = useMemo(() => {
     const hidden = activeId
@@ -536,6 +567,8 @@ TreeField.propTypes = {
   readonly: PropTypes.bool,
   disabled: PropTypes.bool,
   canAdd: PropTypes.bool,
+  selectedId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  selectionParam: PropTypes.string,
 };
 
 

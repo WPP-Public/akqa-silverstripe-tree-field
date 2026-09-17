@@ -48,6 +48,8 @@ jQuery.entwine('ss', ($) => {
         readonly: !!input.data('readonly'),
         disabled: !!input.data('disabled'),
         canAdd: !!input.data('can-add'),
+        selectedId: input.attr('data-selected-id') || null,
+        selectionParam: input.attr('data-selection-param') || null,
         noHolder: true,
       };
     },

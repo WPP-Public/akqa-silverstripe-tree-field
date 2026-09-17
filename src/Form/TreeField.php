@@ -45,6 +45,17 @@ class TreeField extends FormField
      */
     private bool $showDetail = true;
 
+    /**
+     * The record open in the detail panel when the field first loads.
+     */
+    private ?string $selectedNodeID = null;
+
+    /**
+     * A query string parameter the client keeps in step with the open record, so a record can be
+     * linked to directly. Null leaves the URL alone.
+     */
+    private ?string $selectionParam = null;
+
     public function __construct(
         string $name,
         ?string $title = null,
@@ -93,6 +104,36 @@ class TreeField extends FormField
     public function getShowDetail(): bool
     {
         return $this->showDetail;
+    }
+
+    /**
+     * Open a record in the detail panel when the field loads. An ID that is not in this field's
+     * tree is ignored.
+     */
+    public function setSelectedNodeID(int|string|null $id): static
+    {
+        $id = $id === null ? '' : (string) $id;
+
+        $this->selectedNodeID = $id !== '' && $this->getSource()->getNode($id) ? $id : null;
+
+        return $this;
+    }
+
+    public function getSelectedNodeID(): ?string
+    {
+        return $this->selectedNodeID;
+    }
+
+    public function setSelectionParam(?string $param): static
+    {
+        $this->selectionParam = $param ?: null;
+
+        return $this;
+    }
+
+    public function getSelectionParam(): ?string
+    {
+        return $this->selectionParam;
     }
 
     /**
@@ -171,6 +212,8 @@ class TreeField extends FormField
         $data['showDetail'] = $this->showDetail;
         $data['urls'] = $this->getUrls();
         $data['securityID'] = SecurityToken::inst()->getValue();
+        $data['selectedId'] = $this->selectedNodeID;
+        $data['selectionParam'] = $this->selectionParam;
 
         return $data;
     }
@@ -205,6 +248,8 @@ class TreeField extends FormField
         $attributes['data-disabled'] = $this->isDisabled() ? 1 : 0;
         $attributes['data-security-id'] = SecurityToken::inst()->getValue();
         $attributes['data-can-add'] = $this->getCanAdd() ? 1 : 0;
+        $attributes['data-selected-id'] = $this->selectedNodeID;
+        $attributes['data-selection-param'] = $this->selectionParam;
 
         return $attributes;
     }

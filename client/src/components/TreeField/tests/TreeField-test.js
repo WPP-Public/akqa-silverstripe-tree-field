@@ -194,6 +194,43 @@ describe('TreeField', () => {
       .toHaveAttribute('data-schema-url', `${urls.schema}/item-1`);
   });
 
+  it('opens on the record it is given', async () => {
+    renderField({ selectedId: 'item-2' });
+
+    expect(await screen.findByTestId('form-builder'))
+      .toHaveAttribute('data-schema-url', `${urls.schema}/item-2`);
+    expect(await screen.findByRole('heading', { name: 'Contact' })).toBeInTheDocument();
+  });
+
+  it('drops a given record that is not in the tree', async () => {
+    renderField({ selectedId: 'missing' });
+
+    expect(await screen.findByText('Select a menu to edit it')).toBeInTheDocument();
+    expect(screen.queryByTestId('form-builder')).not.toBeInTheDocument();
+  });
+
+  it('keeps the open record in the address bar when asked to', async () => {
+    const user = userEvent.setup();
+    window.history.replaceState(null, '', '/admin/menus?MenuSetID=4');
+    renderField({ selectionParam: 'MenuItemID' });
+
+    await user.click(await screen.findByText('About us'));
+
+    await waitFor(() => expect(window.location.search).toBe('?MenuSetID=4&MenuItemID=item-1'));
+    window.history.replaceState(null, '', '/');
+  });
+
+  it('leaves the address bar alone by default', async () => {
+    const user = userEvent.setup();
+    window.history.replaceState(null, '', '/admin/menus?MenuSetID=4');
+    renderField();
+
+    await user.click(await screen.findByText('About us'));
+
+    expect(window.location.search).toBe('?MenuSetID=4');
+    window.history.replaceState(null, '', '/');
+  });
+
   it('shows a prompt instead of a form when nothing is selected', async () => {
     renderField();
 

@@ -46,10 +46,9 @@ $tree-field-hover-bg: rgba(0, 0, 0, 0.03);
   &__tree {
     flex: 1 1 40%;
     min-width: 0;
-    border: 1px solid #{$tree-field-border};
-    border-radius: 4px;
-    padding: 0.25rem;
-    background: var(--well-bg, #fff);
+    padding: 0;
+    border: none;
+    background: transparent;
   }
 
   // Visible rather than auto: a row's menu opens outside the list, and clipping it makes the
@@ -61,20 +60,24 @@ $tree-field-hover-bg: rgba(0, 0, 0, 0.03);
   &__list {
     list-style: none;
     margin: 0;
-    padding: 0.25rem 0;
+    padding: 0;
   }
 
   &__row {
     margin: 0;
-    padding: 0.125rem 0;
+    padding: 0;
 
     &-inner {
+      position: relative;
       display: flex;
       align-items: center;
       gap: 0.125rem;
-      border-radius: 4px;
       min-height: 3rem;
       padding: 0.25rem 0.25rem 0.25rem 0;
+      margin-bottom: 4px;
+      background: #fff;
+      border: 1px solid #{$tree-field-border};
+      border-radius: 4px;
 
       &:hover {
         background: #{$tree-field-hover-bg};
@@ -111,6 +114,7 @@ $tree-field-hover-bg: rgba(0, 0, 0, 0.03);
     justify-content: center;
     width: 1.75rem;
     height: 1.75rem;
+    margin: 0;
     padding: 0;
     border: 0;
     background: none;
@@ -140,7 +144,7 @@ $tree-field-hover-bg: rgba(0, 0, 0, 0.03);
     align-items: center;
     gap: 0.5rem;
     min-width: 0;
-    padding: 0.25rem 0.5rem;
+    padding: 0;
     border: 0;
     background: none;
     text-align: start;
@@ -179,6 +183,34 @@ $tree-field-hover-bg: rgba(0, 0, 0, 0.03);
 
   &__badge {
     flex: 0 0 auto;
+  }
+
+  // Unpublished changes, the same orange dot the Files section and menu tiles use
+  &__status {
+    position: absolute;
+    top: 0.35rem;
+    right: 0.35rem;
+    width: 0.6rem;
+    height: 0.6rem;
+    border-radius: 50%;
+    background: #ff9006;
+    pointer-events: none;
+  }
+
+  /*
+   * Visible only to screen readers. Defined here rather than borrowing a CMS utility class,
+   * because that name has changed between Bootstrap versions.
+   */
+  &__status-text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
   }
 
   &__row-actions {

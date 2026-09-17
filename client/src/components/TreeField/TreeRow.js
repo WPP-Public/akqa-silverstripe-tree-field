@@ -47,6 +47,10 @@ const TreeRow = ({
 
   const hasChildren = node.childCount > 0;
   const showActions = !readonly && (node.canDelete || node.canEdit);
+  const hasUnpublishedChanges = node.status === 'draft' || node.status === 'modified';
+  const statusLabel = node.status === 'draft'
+    ? i18n._t('TreeField.STATUS_DRAFT', 'Draft — not published')
+    : i18n._t('TreeField.STATUS_MODIFIED', 'Modified — not published');
 
   return (
     <li
@@ -122,6 +126,12 @@ const TreeRow = ({
             </span>
           </span>
         </button>
+
+        {hasUnpublishedChanges && (
+          <span className="tree-field__status" title={statusLabel}>
+            <span className="tree-field__status-text">{statusLabel}</span>
+          </span>
+        )}
 
         {showActions && (
           <div className="tree-field__row-actions">
