@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import {
@@ -64,6 +64,8 @@ const TreeField = ({
   const [treeCanAdd, setTreeCanAdd] = useState(canAdd);
 
   const dirtyRef = useRef(false);
+  const treeRef = useRef(null);
+  const [detailOffset, setDetailOffset] = useState(0);
   const api = useMemo(() => createApi(urls, securityID), [urls, securityID]);
   const isReadonly = readonly || disabled;
 
@@ -398,6 +400,49 @@ const TreeField = ({
 
   const selectedNode = selectedId ? findNode(nodes, selectedId) : null;
 
+  /**
+   * A long tree pushes its bottom rows well below the detail panel, which sits at the top of the
+   * body and scrolls out of sight. Drop the panel down to the selected row instead, so the row
+   * and the form you are editing sit on the same line.
+   */
+  const measureDetailOffset = useCallback(() => {
+    const tree = treeRef.current;
+    const row = tree && selectedId
+      ? tree.querySelector(`[data-node-id="${selectedId}"]`)
+      : null;
+
+    if (!row) {
+      setDetailOffset(0);
+      return;
+    }
+
+    const offset = row.getBoundingClientRect().top - tree.getBoundingClientRect().top;
+
+    setDetailOffset(Math.max(0, Math.round(offset)));
+  }, [selectedId]);
+
+  // Rows shift as the tree loads, collapses and reorders, and as the panel itself changes width
+  useLayoutEffect(() => {
+    // Mid-drag the rows are mid-transform, so leave the panel where it is until the row lands
+    if (!showDetail || activeId) {
+      return undefined;
+    }
+
+    measureDetailOffset();
+
+    const tree = treeRef.current;
+
+    if (!tree || typeof ResizeObserver === 'undefined') {
+      return undefined;
+    }
+
+    const observer = new ResizeObserver(measureDetailOffset);
+
+    observer.observe(tree);
+
+    return () => observer.disconnect();
+  }, [showDetail, activeId, flattened, measureDetailOffset]);
+
   const rowFor = (item) => {
     const siblings = flattened.filter((node) => node.parentId === item.parentId);
     const index = siblings.findIndex((node) => node.id === item.id);
@@ -479,7 +524,7 @@ const TreeField = ({
       </div>
 
       <div className="tree-field__body">
-        <div className="tree-field__tree">
+        <div className="tree-field__tree" ref={treeRef}>
           {loading && (
             <p className="tree-field__loading">{i18n._t('TreeField.LOADING', 'Loading…')}</p>
           )}
@@ -538,6 +583,7 @@ const TreeField = ({
           <TreeDetail
             schemaUrl={urls.schema}
             nodeId={selectedId}
+            offsetTop={detailOffset}
             nodeTitle={selectedNode ? selectedNode.title : ''}
             onSaved={() => loadTree()}
             onDirtyChange={handleDirtyChange}

@@ -14,9 +14,13 @@ const TreeDetail = ({
   onSaved,
   onDirtyChange,
   emptyMessage,
+  offsetTop = 0,
 }) => {
   const [saving, setSaving] = useState(false);
   const wrapperRef = useRef(null);
+
+  // Read back by the stylesheet, which only applies it once the two columns sit side by side
+  const style = { '--tree-field-detail-offset': `${offsetTop}px` };
 
   // Reset the dirty flag whenever the selection changes
   useEffect(() => {
@@ -41,14 +45,14 @@ const TreeDetail = ({
 
   if (!nodeId) {
     return (
-      <div className="tree-field__detail tree-field__detail--empty">
+      <div className="tree-field__detail tree-field__detail--empty" style={style}>
         <p className="tree-field__detail-empty-text">{emptyMessage}</p>
       </div>
     );
   }
 
   return (
-    <div className="tree-field__detail">
+    <div className="tree-field__detail" style={style}>
       <div className="tree-field__detail-header">
         <h3 className="tree-field__detail-title">{nodeTitle}</h3>
         {saving && (
@@ -81,6 +85,7 @@ TreeDetail.propTypes = {
   onSaved: PropTypes.func.isRequired,
   onDirtyChange: PropTypes.func.isRequired,
   emptyMessage: PropTypes.string.isRequired,
+  offsetTop: PropTypes.number,
 };
 
 

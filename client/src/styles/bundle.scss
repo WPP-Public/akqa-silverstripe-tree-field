@@ -288,6 +288,17 @@ $tree-field-hover-bg: rgba(0, 0, 0, 0.03);
     border-radius: 4px;
     background: var(--well-bg, #fff);
 
+    // Side by side, the panel drops to the row it belongs to. Stacked, the offset is meaningless
+    // and would only leave a gap, so it is scoped to the two-column layout.
+    @media (min-width: 992px) {
+      margin-top: var(--tree-field-detail-offset, 0);
+      transition: margin-top 0.15s ease-out;
+
+      @media (prefers-reduced-motion: reduce) {
+        transition: none;
+      }
+    }
+
     &--empty {
       display: flex;
       align-items: center;

@@ -84,6 +84,7 @@ describe('TreeField', () => {
 
   afterEach(() => {
     jest.resetAllMocks();
+    jest.restoreAllMocks();
   });
 
   it('shows each row on two lines, with where it points underneath', async () => {
@@ -192,6 +193,44 @@ describe('TreeField', () => {
 
     expect(screen.getByTestId('form-builder'))
       .toHaveAttribute('data-schema-url', `${urls.schema}/item-1`);
+  });
+
+  it('drops the detail panel down to the row it is editing', async () => {
+    // jsdom lays nothing out, so the rows are given positions to measure
+    const tops = { 'item-1': 96, 'item-2': 144 };
+
+    jest.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function rect() {
+      const id = this.getAttribute('data-node-id');
+
+      return {
+        top: id && tops[id] !== undefined ? tops[id] : 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        width: 0,
+        height: 0,
+        x: 0,
+        y: 0,
+      };
+    });
+
+    const user = userEvent.setup();
+    renderField();
+
+    await user.click(await screen.findByText('Contact'));
+
+    const detail = document.querySelector('.tree-field__detail');
+
+    expect(detail.style.getPropertyValue('--tree-field-detail-offset')).toBe('144px');
+  });
+
+  it('puts the detail panel back at the top when nothing is selected', async () => {
+    renderField();
+
+    const detail = await screen.findByText('Select a menu to edit it');
+
+    expect(detail.closest('.tree-field__detail').style
+      .getPropertyValue('--tree-field-detail-offset')).toBe('0px');
   });
 
   it('opens on the record it is given', async () => {
