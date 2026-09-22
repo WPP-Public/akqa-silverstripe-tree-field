@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import TreeField from '../TreeField';
 
@@ -268,6 +268,24 @@ describe('TreeField', () => {
 
     expect(window.location.search).toBe('?MenuSetID=4');
     window.history.replaceState(null, '', '/');
+  });
+
+  it('tells its host when the detail panel gains and loses unsaved edits', async () => {
+    const onDirtyChange = jest.fn();
+    renderField({ selectedId: 'item-1', onDirtyChange });
+
+    await screen.findByText('Contact');
+    const form = screen.getByTestId('form-builder');
+    fireEvent.input(form);
+    fireEvent.input(form);
+
+    expect(onDirtyChange).toHaveBeenCalledTimes(1);
+    expect(onDirtyChange).toHaveBeenLastCalledWith(true);
+
+    jest.spyOn(window, 'confirm').mockReturnValue(true);
+    await userEvent.setup().click(screen.getByText('Contact'));
+
+    expect(onDirtyChange).toHaveBeenLastCalledWith(false);
   });
 
   it('shows a prompt instead of a form when nothing is selected', async () => {

@@ -29,6 +29,8 @@ if (typeof(ss) === 'undefined' || typeof(ss.i18n) === 'undefined') {
     "TreeField.OUTDENT": "Move out one level",
     "TreeField.REORDER": "Reorder",
     "TreeField.SAVING": "Saving…",
+    "TreeField.SAVED": "Saved",
+    "TreeField.NOT_SAVED": "Not saved",
     "TreeField.SELECT_TO_EDIT": "Select a {singular} to edit it"
 });
 }

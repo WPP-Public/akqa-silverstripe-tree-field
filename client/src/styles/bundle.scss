@@ -12,6 +12,8 @@ $tree-field-border: var(--border-color, #ced5e1);
 $tree-field-muted: var(--text-muted, #6c757d);
 $tree-field-selected-bg: var(--tab-panel-selected-bg, #edf7fd);
 $tree-field-hover-bg: rgba(0, 0, 0, 0.03);
+$tree-field-success: var(--bs-success, #198754);
+$tree-field-danger: var(--bs-danger, #dc3545);
 
 .tree-field {
   display: flex;
@@ -325,6 +327,14 @@ $tree-field-hover-bg: rgba(0, 0, 0, 0.03);
   &__detail-status {
     color: #{$tree-field-muted};
     font-size: 0.85em;
+
+    &--saved {
+      color: #{$tree-field-success};
+    }
+
+    &--failed {
+      color: #{$tree-field-danger};
+    }
   }
 
   &__detail-body {

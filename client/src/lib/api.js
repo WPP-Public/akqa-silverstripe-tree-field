@@ -1,3 +1,5 @@
+import joinUrl from './joinUrl';
+
 /**
  * Thin fetch wrapper for the TreeField JSON endpoints.
  *
@@ -92,7 +94,7 @@ const createApi = (urls, securityID) => {
       position,
     }),
 
-    deleteNode: (nodeID) => mutate(`${urls.delete}/${nodeID}`),
+    deleteNode: (nodeID) => mutate(joinUrl(urls.delete, nodeID)),
   };
 };
 

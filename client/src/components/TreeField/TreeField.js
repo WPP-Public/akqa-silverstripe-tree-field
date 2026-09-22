@@ -49,6 +49,7 @@ const TreeField = ({
   canAdd = false,
   selectedId: initialSelectedId = null,
   selectionParam = null,
+  onDirtyChange = null,
 }) => {
   const [nodes, setNodes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -69,9 +70,18 @@ const TreeField = ({
   const api = useMemo(() => createApi(urls, securityID), [urls, securityID]);
   const isReadonly = readonly || disabled;
 
+  // Read through a ref so handleDirtyChange keeps a stable identity for the detail panel
+  const onDirtyChangeRef = useRef(onDirtyChange);
+  onDirtyChangeRef.current = onDirtyChange;
+
   // Stable identity: the detail panel resets this whenever the selection changes
   const handleDirtyChange = useCallback((dirty) => {
+    const changed = dirtyRef.current !== dirty;
     dirtyRef.current = dirty;
+
+    if (changed && typeof onDirtyChangeRef.current === 'function') {
+      onDirtyChangeRef.current(dirty);
+    }
   }, []);
 
   const announce = useCallback((text, type = 'success') => {
@@ -179,11 +189,11 @@ const TreeField = ({
     ));
 
     if (proceed) {
-      dirtyRef.current = false;
+      handleDirtyChange(false);
     }
 
     return proceed;
-  }, []);
+  }, [handleDirtyChange]);
 
   const handleSelect = useCallback((id) => {
     if (id === selectedId || !confirmDiscard()) {
@@ -261,11 +271,11 @@ const TreeField = ({
       i18n._t('TreeField.DELETED', 'Deleted')
     ).then(() => {
       if (removedIds.includes(selectedId)) {
-        dirtyRef.current = false;
+        handleDirtyChange(false);
         setSelectedId(null);
       }
     });
-  }, [api, nodes, selectedId, runMutation]);
+  }, [api, nodes, selectedId, runMutation, handleDirtyChange]);
 
   /**
    * Keyboard and menu driven moves. These go through the same endpoint as a drag.
@@ -615,6 +625,8 @@ TreeField.propTypes = {
   canAdd: PropTypes.bool,
   selectedId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   selectionParam: PropTypes.string,
+  // Told whenever the detail panel gains or loses unsaved edits
+  onDirtyChange: PropTypes.func,
 };
 
 
